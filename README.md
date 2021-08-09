@@ -18,3 +18,13 @@ Export Illumio Explorer traffic to AlgoSec AppViz
                             PCE API secret
       --query-file QUERY_FILE
                             Query file skeleton
+
+# Environment vars
+
+If you do not use the command line switches, be sure to have the following
+env vars set
+
+* PCE_FQDN
+* PCE_ORG
+* PCE_API_KEY
+* PCE_API_SECRET

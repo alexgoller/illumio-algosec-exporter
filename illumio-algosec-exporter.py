@@ -12,12 +12,12 @@ import csv
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--pce-fqdn', help='PCE FQDN', default=os.environ.get('PCE_FQDN'))
-parser.add_argument('--pce-org', help='PCE Org Id', default=os.environ.get('PCE_ORG'))
-parser.add_argument('--pce-api-key', help='PCE API Key', default=os.environ.get('PCE_API_KEY'))
-parser.add_argument('--pce-api-secret', help='PCE API secret', default=os.environ.get('PCE_API_SECRET'))
-parser.add_argument('--output-file', help='PCE API secret', default=os.environ.get('PCE_API_SECRET'))
-parser.add_argument('--query-file', help='Query file skeleton', default='query.json')
+parser.add_argument('--pce-fqdn', help='PCE FQDN name, will also try to read env var PCE_FQDN', default=os.environ.get('PCE_FQDN'))
+parser.add_argument('--pce-org', help='PCE Org Id, will also try to read env var PCE_ORG', default=os.environ.get('PCE_ORG'))
+parser.add_argument('--pce-api-key', help='PCE API Key, will also try to read env var PCE_API_KEY', default=os.environ.get('PCE_API_KEY'))
+parser.add_argument('--pce-api-secret', help='PCE API secret, will also try to read env var PCE_API_SECRET', default=os.environ.get('PCE_API_SECRET'))
+parser.add_argument('--output-file', help='Output CSV file', default='illumio-algosec-export.csv')
+parser.add_argument('--query-file', help='Query file skeleton', default='traffic-query.json')
 args = parser.parse_args()
 
 fqdn = args.pce_fqdn
