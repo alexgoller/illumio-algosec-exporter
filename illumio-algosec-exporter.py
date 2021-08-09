@@ -79,6 +79,9 @@ with open(file, "w", encoding = 'UTF-8') as f:
                 proto = 'icmp'
     
             service = "{}/{}".format(proto, port)
+
+        if dst_name == '' or src_name == '':
+            continue
     
     
         # print("Src: {}, Src hostname: {}, Dst: {}, Dst hostname: {}, Service: {}, Service name: {}, App Name: {}".format(src,src_name, dst, dst_name, service, service_name, app))
