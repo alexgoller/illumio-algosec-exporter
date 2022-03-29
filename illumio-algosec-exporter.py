@@ -9,7 +9,6 @@ import logging
 import time
 import csv
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--pce-fqdn', help='PCE FQDN name, will also try to read env var PCE_FQDN', default=os.environ.get('PCE_FQDN'))
@@ -18,7 +17,15 @@ parser.add_argument('--pce-api-key', help='PCE API Key, will also try to read en
 parser.add_argument('--pce-api-secret', help='PCE API secret, will also try to read env var PCE_API_SECRET', default=os.environ.get('PCE_API_SECRET'))
 parser.add_argument('--output-file', help='Output CSV file', default='illumio-algosec-export.csv')
 parser.add_argument('--query-file', help='Query file skeleton', default='traffic-query.json')
+parser.add_argument('--verbose', '-v', help='Verbose output', default=False)
+
 args = parser.parse_args()
+
+if args.verbose:
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+else:
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
 
 fqdn = args.pce_fqdn
 org = args.pce_org
@@ -39,16 +46,20 @@ with open(query, 'r') as queryfile:
 
 query_data = json.loads(data)
 
-print(query_data)
+logging.debug("Query: {}".format(query_data))
 
 response = requests.post("{}/api/v2/orgs/{}/traffic_flows/traffic_analysis_queries".format(fqdn, org), auth=(key,secret), data=json.dumps(query_data), headers={"Content-Type": "application/json"})
 
+logging.info("Response: {}".format(response))
 result = response.json()
+
+logging.info("Number of records retrieved from PCE: {}".format(len(result)))
 
 with open(file, "w", encoding = 'UTF-8') as f:
     writer = csv.writer(f)
     writer.writerow(header)
     for tl in result:
+        logging.debug("TL: {}".format(tl))
         src = tl['src']['ip']
         dst = tl['dst']['ip']
         src_name = ''
@@ -59,10 +70,22 @@ with open(file, "w", encoding = 'UTF-8') as f:
         label_dict = {}
     
         if 'workload' in tl['src']:
-            src_name = tl['src']['workload']['hostname']
+            if 'workload' in tl['src']['workload']:
+                src_name = tl['src']['workload']['hostname']
+            else:
+                src_name = tl['src']['ip']
+        else:
+            src_name = tl['src']['ip']
+
         if 'workload' in tl['dst']:
-            dst_name = tl['dst']['workload']['hostname']
-            if 'labels' in tl['dst']['workload']:
+            if 'workload' in tl['dst']['workload']:
+                dst_name = tl['dst']['workload']['hostname']
+            else:
+                dst_name = tl['dst']['ip']
+        else:
+            dst_name = tl['dst']['ip']
+
+            if 'workload' in tl['dst'] and 'labels' in tl['dst']['workload']:
                 label_dict = dict(map(lambda x: (x['key'], x['value']), tl['dst']['workload']['labels']))
                 if 'app' in label_dict:
                     app = label_dict['app']
