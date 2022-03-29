@@ -1,6 +1,6 @@
 { 
-    "start_date": "2021-07-01", 
-    "end_date": "2021-07-30", 
+    "start_date": "2021-01-01", 
+    "end_date": "2022-03-20", 
     "policy_decisions": [ "allowed" ], 
     "max_results": 1000, 
     "exclude_workloads_from_ip_list_query": true, 
