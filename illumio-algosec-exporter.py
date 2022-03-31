@@ -53,6 +53,7 @@ response = requests.post("{}/api/v2/orgs/{}/traffic_flows/traffic_analysis_queri
 logging.info("Response: {}".format(response))
 result = response.json()
 
+logging.debug("Result".format(result))
 logging.info("Number of records retrieved from PCE: {}".format(len(result)))
 
 with open(file, "w", encoding = 'UTF-8') as f:
@@ -85,10 +86,11 @@ with open(file, "w", encoding = 'UTF-8') as f:
         else:
             dst_name = tl['dst']['ip']
 
-            if 'workload' in tl['dst'] and 'labels' in tl['dst']['workload']:
-                label_dict = dict(map(lambda x: (x['key'], x['value']), tl['dst']['workload']['labels']))
-                if 'app' in label_dict:
-                    app = label_dict['app']
+        if 'workload' in tl['dst'] and 'labels' in tl['dst']['workload']:
+            label_dict = dict(map(lambda x: (x['key'], x['value']), tl['dst']['workload']['labels']))
+            logging.debug("Labels: {}".format(label_dict))
+            if 'app' in label_dict:
+                app = label_dict['app']
     
         if 'service' in tl:
             port = tl['service']['port']
