@@ -19,12 +19,15 @@ Export Illumio Explorer traffic to AlgoSec AppViz
       --query-file QUERY_FILE
                             Query file skeleton
 
+# Traffic query file
+
+A json file is provided that contains a traffic query as documented in https://docs.illumio.com/core/21.5/API-Reference/index.html#Illumio-Core-traffic_flows_async_queries
 # Environment vars
 
 If you do not use the command line switches, be sure to have the following
 env vars set
 
-* PCE_FQDN
-* PCE_ORG
-* PCE_API_KEY
-* PCE_API_SECRET
+* PCE_FQDN - URL for the PCE
+* PCE_ORG - your org, defaults to 1
+* PCE_API_KEY - your API key, including api_
+* PCE_API_SECRET - your API key secret
