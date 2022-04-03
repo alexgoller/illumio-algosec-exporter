@@ -17,6 +17,8 @@ parser.add_argument('--pce-api-key', help='PCE API Key, will also try to read en
 parser.add_argument('--pce-api-secret', help='PCE API secret, will also try to read env var PCE_API_SECRET', default=os.environ.get('PCE_API_SECRET'))
 parser.add_argument('--output-file', help='Output CSV file', default='illumio-algosec-export.csv')
 parser.add_argument('--query-file', help='Query file skeleton', default='traffic-query.json')
+parser.add_argument('--algosec-label', '-a', help='Illumio labels to use for the AlgoSec app label, comma separated, e.g. "app", "app,env", "app,env,loc"', default="app")
+parser.add_argument('--label-concat', '-c', help='String to use for concatening labels', default="-")
 parser.add_argument('--verbose', '-v', help='Verbose output', default=False)
 
 args = parser.parse_args()
@@ -33,6 +35,11 @@ key = args.pce_api_key
 secret = args.pce_api_secret
 file = args.output_file
 query = args.query_file
+algosec_labels = args.algosec_label
+parsed_labels = algosec_labels.split(",")
+
+logging.debug("Labels: {}".format(parsed_labels))
+
 
 logging.info("PCE {} on org {}, API User: {}".format(fqdn, org, key))
 
@@ -49,6 +56,11 @@ query_data = json.loads(data)
 logging.debug("Query: {}".format(query_data))
 
 response = requests.post("{}/api/v2/orgs/{}/traffic_flows/traffic_analysis_queries".format(fqdn, org), auth=(key,secret), data=json.dumps(query_data), headers={"Content-Type": "application/json"})
+if response.status_code != 200:
+    logging.info("Non 200 status code. Exiting. (HTTP status code: {})".format(response.status_code))
+    exit()
+else:
+    logging.info("Query successful. Processing results.")
 
 logging.info("Response: {}".format(response))
 result = response.json()
@@ -71,7 +83,7 @@ with open(file, "w", encoding = 'UTF-8') as f:
         label_dict = {}
     
         if 'workload' in tl['src']:
-            if 'workload' in tl['src']['workload']:
+            if 'hostname' in tl['src']['workload']:
                 src_name = tl['src']['workload']['hostname']
             else:
                 src_name = tl['src']['ip']
@@ -79,19 +91,26 @@ with open(file, "w", encoding = 'UTF-8') as f:
             src_name = tl['src']['ip']
 
         if 'workload' in tl['dst']:
-            if 'workload' in tl['dst']['workload']:
+            if 'hostname' in tl['dst']['workload']:
                 dst_name = tl['dst']['workload']['hostname']
             else:
                 dst_name = tl['dst']['ip']
         else:
             dst_name = tl['dst']['ip']
 
+        applist = []
         if 'workload' in tl['dst'] and 'labels' in tl['dst']['workload']:
             label_dict = dict(map(lambda x: (x['key'], x['value']), tl['dst']['workload']['labels']))
             logging.debug("Labels: {}".format(label_dict))
-            if 'app' in label_dict:
-                app = label_dict['app']
-    
+            for label in parsed_labels:
+                logging.debug("Label: {}".format(label))
+                if label in label_dict:
+                    applist.append(label_dict[label])
+                else:
+                    applist.append("Unknown")
+            logging.debug("App label list: {}".format(applist))
+            app = args.label_concat.join(applist)    
+
         if 'service' in tl:
             port = tl['service']['port']
             proto = tl['service']['proto']
