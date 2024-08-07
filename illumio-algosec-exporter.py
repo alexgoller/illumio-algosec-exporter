@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import requests
-import json
 import sys
 import os
 import argparse
@@ -19,7 +18,8 @@ parser.add_argument('--pce-port', help='PCE Port, will also try to read env var 
 parser.add_argument('--pce-api-key', help='PCE API Key, will also try to read env var PCE_API_KEY', default=os.environ.get('PCE_API_KEY'))
 parser.add_argument('--pce-api-secret', help='PCE API secret, will also try to read env var PCE_API_SECRET', default=os.environ.get('PCE_API_SECRET'))
 parser.add_argument('--output-file', help='Output CSV file', default='illumio-algosec-export.csv')
-parser.add_argument('--query-file', help='Query file skeleton', default='traffic-query.json')
+parser.add_argument('--query-file', help='Query file skeleton', default='traffic-config.yaml')
+parser.add_argument('--traffic-config', help='Name of the traffic configuration to use', default='default')
 parser.add_argument('--algosec-label', '-a', help='Illumio labels to use for the AlgoSec app label, comma separated, e.g. "app", "app,env", "app,env,loc"', default="app")
 parser.add_argument('--label-concat', '-c', help='String to use for concatening labels', default="-")
 parser.add_argument('--verbose', '-v', help='Verbose output', default=False)
@@ -54,7 +54,6 @@ header = ['Source IP', 'Source Name', 'Destination IP', 'Destination Name', 'Ser
 with open(query, 'r') as queryfile:
 	config = yaml.safe_load(queryfile)
 
-pprint.pprint(config)
 pce = PolicyComputeEngine(fqdn, port=port, org_id=org) 
 pce.set_credentials(key, secret)
 
@@ -75,9 +74,12 @@ for l in pce.labels.get():
 	label_href_map[l.href] = {"key": l.key, "value": l.value}
 	value_href_map["{}={}".format(l.key, l.value)] = l.href
 
-pprint.pprint(config['traffic_configs']['daily_traffic'])
+if args.traffic_config:
+	query_config = config['traffic_configs'][args.traffic_config]
+else:
+	query_config = config['traffic_configs']['default']
 
-query_config = config['traffic_configs']['daily_traffic']
+### check dates, they must be in the config file
 query_start  = query_config.pop('start_date')
 query_end  = query_config.pop('end_date')
 
@@ -104,7 +106,6 @@ result = pce.get_traffic_flows_async(
 	traffic_query = traffic_query
 )
 
-pprint.pprint(traffic_query)
 
 logging.debug("Result".format(result))
 logging.info("Number of records retrieved from PCE: {}".format(len(result)))
@@ -133,7 +134,7 @@ with open(file, "w", encoding = 'UTF-8') as f:
 
 		applist = []
 
-		if fdest.workload.labels:
+		if fdest.workload != None and fdest.workload.labels != None:
 			labels = [ label_cache[x.href] for x in fdest.workload.labels if x.href in label_cache ]
 			label_dict = dict(map(lambda x: (x.key, x.value), labels))
 			# logging.debug("Labels: {}".format(label_dict))
@@ -162,5 +163,5 @@ with open(file, "w", encoding = 'UTF-8') as f:
 			continue
 	
 	
-		print("Src: {}, Src hostname: {}, Dst: {}, Dst hostname: {}, Service: {}, Service name: {}, App Name: {}".format(src,src_name, dst, dst_name, service, service_name, app))
+		logging.debug("Src: {}, Src hostname: {}, Dst: {}, Dst hostname: {}, Service: {}, Service name: {}, App Name: {}".format(src,src_name, dst, dst_name, service, service_name, app))
 		writer.writerow([src,src_name,dst,dst_name,service,service_name,app])

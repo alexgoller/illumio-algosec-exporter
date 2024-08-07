@@ -1,12 +1,24 @@
 traffic_configs:
-  daily_traffic:
+  default:
     start_date: "2024-08-01"
     end_date: "2024-08-08"
-    include_sources:
-      - "env=prod"
-    include_destinations:
-      - "env=dev"
+    include_sources: []
+    include_destinations: []
     policy_decisions:
       - allowed
       - potentially_blocked
     max_results: 100000
+
+  example:
+    start_date: "2024-08-01"
+    end_date: "2024-08-08"
+    include_sources:
+      - "env=dev"
+    include_destinations:
+      - "env=prod"
+    policy_decisions:
+      - allowed
+      - potentially_blocked
+    max_results: 100000
+
+
