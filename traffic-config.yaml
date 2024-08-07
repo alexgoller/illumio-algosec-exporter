@@ -1,0 +1,12 @@
+traffic_configs:
+  daily_traffic:
+    start_date: "2024-08-01"
+    end_date: "2024-08-08"
+    include_sources:
+      - "env=prod"
+    include_destinations:
+      - "env=dev"
+    policy_decisions:
+      - allowed
+      - potentially_blocked
+    max_results: 100000
