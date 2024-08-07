@@ -2,8 +2,6 @@ traffic_configs:
   default:
     start_date: "2024-08-01"
     end_date: "2024-08-08"
-    include_sources: []
-    include_destinations: []
     policy_decisions:
       - allowed
       - potentially_blocked
@@ -14,8 +12,11 @@ traffic_configs:
     end_date: "2024-08-08"
     include_sources:
       - "env=dev"
+    exclude_sources:
+      - "app=assetmgmt"
     include_destinations:
       - "env=prod"
+    exclude_destinations: []
     policy_decisions:
       - allowed
       - potentially_blocked

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import requests
 import sys
 import os
 import argparse
@@ -8,7 +7,6 @@ import logging
 import time
 import csv
 import yaml
-import pprint
 from illumio import *
 
 parser = argparse.ArgumentParser()
@@ -83,21 +81,37 @@ else:
 query_start  = query_config.pop('start_date')
 query_end  = query_config.pop('end_date')
 
-sources = query_config.pop('include_sources')
 include_sources = []
-for s in sources:
-	include_sources.append(value_href_map[s])
+if 'include_sources' in query_config:
+	sources = query_config.pop('include_sources')
+	for s in sources:
+		include_sources.append(value_href_map[s])
 
-destinations = query_config.pop('include_destinations')
 include_destinations = []
-for s in destinations:
-	include_destinations.append(value_href_map[s])
+if 'include_destinations' in query_config:
+	destinations = query_config.pop('include_destinations')
+	for s in destinations:
+		include_destinations.append(value_href_map[s])
+
+exclude_sources = []
+if 'exclude_sources' in query_config:
+	sources_exclude = query_config.pop('exclude_sources')
+	for s in sources_exclude:
+		exclude_sources.append(value_href_map[s])
+
+exclude_destinations = []
+if 'exclude_destinations' in query_config:
+	destinations_exclude = query_config.pop('exclude_destinations')
+	for s in destinations_exclude:
+		exclude_destinations.append(value_href_map[s])
 
 traffic_query = TrafficQuery.build(
 	query_start,
 	query_end,
 	include_sources=include_sources,
 	include_destinations=include_destinations,
+	exclude_sources=exclude_sources,
+	exclude_destinations=exclude_destinations,
 	policy_decisions=query_config['policy_decisions']
 )
 
@@ -122,6 +136,9 @@ with open(file, "w", encoding = 'UTF-8') as f:
 		service_name = ''
 		app = ''
 		
+		src_name = src
+		dst_name = dst
+
 		if fsrc.workload:
 			src_name = fsrc.workload.hostname
 			if fsrc.workload.hostname:
