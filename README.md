@@ -72,6 +72,8 @@ traffic_configs:
     end_date: "2024-08-08"
     include_sources: []
     include_destinations: []
+    exclude_destinations: []
+    exclude_sources: []
     policy_decisions:
       - allowed
       - potentially_blocked
