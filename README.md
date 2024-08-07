@@ -1,42 +1,86 @@
-# illumio-algosec-exporter
+# Illumio AlgoSec Exporter
 
-Export Illumio Explorer traffic to AlgoSec AppViz
+## Description
 
-# Usage
+The Illumio AlgoSec Exporter is a Python-based tool designed to query traffic flow data from an Illumio Policy Compute Engine (PCE) and export it to a CSV file. This tool is particularly useful for organizations using both Illumio and AlgoSec, as it formats the data in a way that can be easily imported into AlgoSec for further analysis.
 
-usage: illumio-algosec-exporter.py [-h] [--pce-fqdn PCE_FQDN] [--pce-org PCE_ORG] [--pce-api-key PCE_API_KEY] [--pce-api-secret PCE_API_SECRET]
-                                   [--output-file OUTPUT_FILE] [--query-file QUERY_FILE] [--algosec-label ALGOSEC_LABEL]
-                                   [--label-concat LABEL_CONCAT] [--verbose VERBOSE]
+## Features
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --pce-fqdn PCE_FQDN   PCE FQDN name, will also try to read env var PCE_FQDN
-  --pce-org PCE_ORG     PCE Org Id, will also try to read env var PCE_ORG
-  --pce-api-key PCE_API_KEY
-                        PCE API Key, will also try to read env var PCE_API_KEY
-  --pce-api-secret PCE_API_SECRET
-                        PCE API secret, will also try to read env var PCE_API_SECRET
-  --output-file OUTPUT_FILE
-                        Output CSV file
-  --query-file QUERY_FILE
-                        Query file skeleton
-  --algosec-label ALGOSEC_LABEL, -a ALGOSEC_LABEL
-                        Illumio labels to use for the AlgoSec app label, comma separated, e.g. "app", "app,env", "app,env,loc"
-  --label-concat LABEL_CONCAT, -c LABEL_CONCAT
-                        String to use for concatening labels
-  --verbose VERBOSE, -v VERBOSE
-                        Verbose output
+- Connects to Illumio PCE using API credentials
+- Queries traffic flow data based on configurable parameters
+- Exports traffic flow data to a CSV file with customizable headers
+- Supports custom label mapping for AlgoSec application names
+- Implements efficient label caching to improve performance
 
+## Prerequisites
 
-# Traffic query file
+- Python 3.x
+- Access to an Illumio PCE with API credentials
+- Required Python packages (see `requirements.txt`)
 
-A json file is provided that contains a traffic query as documented in https://docs.illumio.com/core/21.5/API-Reference/index.html#Illumio-Core-traffic_flows_async_queries
-# Environment vars
+## Installation
 
-If you do not use the command line switches, be sure to have the following
-env vars set
+1. Clone this repository or download the script.
+2. Install the required Python packages:
 
-* PCE_FQDN - URL for the PCE
-* PCE_ORG - your org, defaults to 1
-* PCE_API_KEY - your API key, including api_
-* PCE_API_SECRET - your API key secret
+   ```
+   pip install -r requirements.txt
+   ```
+
+## Configuration
+
+1. Set up your PCE connection details either as environment variables or pass them as command-line arguments.
+2. Prepare a YAML configuration file (`traffic-query.json` by default) with your desired traffic query parameters.
+
+## Usage
+
+Run the script with the following command:
+
+```
+python illumio-algosec-exporter.py [options]
+```
+
+### Command-line Options
+
+- `--pce-fqdn`: PCE FQDN name (can also be set via PCE_FQDN environment variable)
+- `--pce-org`: PCE Org ID (can also be set via PCE_ORG environment variable)
+- `--pce-port`: PCE Port (can also be set via PCE_PORT environment variable)
+- `--pce-api-key`: PCE API Key (can also be set via PCE_API_KEY environment variable)
+- `--pce-api-secret`: PCE API Secret (can also be set via PCE_API_SECRET environment variable)
+- `--output-file`: Output CSV file name (default: 'illumio-algosec-export.csv')
+- `--query-file`: Query file skeleton (default: 'traffic-query.json')
+- `--algosec-label`: Illumio labels to use for the AlgoSec app label (default: "app")
+- `--label-concat`: String to use for concatenating labels (default: "-")
+- `--verbose`: Enable verbose output
+
+## Output
+
+The script generates a CSV file with the following headers:
+
+- Source IP
+- Source Name
+- Destination IP
+- Destination Name
+- Service
+- Service Name
+- Application Name
+
+## Example
+
+```
+python illumio-algosec-exporter.py --pce-fqdn my.pce.com --pce-org 1 --pce-port 8443 --output-file my_export.csv --algosec-label "app,env"
+```
+
+## Notes
+
+- Ensure your PCE API credentials have the necessary permissions to query traffic flow data.
+- The tool implements label caching to improve performance. If labels change frequently in your environment, you may need to modify the caching mechanism.
+
+## Troubleshooting
+
+- If you encounter connection issues, verify your PCE credentials and network connectivity.
+- For detailed logging, use the `--verbose` flag.
+
+## Contributing
+
+Contributions to improve the Illumio AlgoSec Exporter are welcome. Please submit pull requests or open issues on the project's repository.
